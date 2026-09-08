@@ -1,130 +1,162 @@
-# backend-basic-jwt-auth-api
+# Backend Basic JWT Auth API
 
-A basic backend-only JWT authentication API built with Node.js, Express.js, MongoDB, bcryptjs, and jsonwebtoken.
-
----
+A lightweight REST API for user registration, login, and protected profile access using Node.js, Express, MongoDB, bcrypt, and JSON Web Tokens (JWT).
 
 ## Features
 
-- User registration
-- User login
-- Protected profile route
-- Basic logout response
-- Password hashing with bcryptjs
-- JWT token generation
-- MongoDB database connection with Mongoose
-
----
+- User registration with password hashing
+- User login with JWT access-token generation
+- Protected `GET /api/auth/me` profile endpoint
+- Email normalization and duplicate-user checks
+- MongoDB persistence through Mongoose
+- CORS and JSON request-body support
+- Simple logout response for this basic JWT implementation
 
 ## Tech Stack
 
 - Node.js
 - Express.js
-- MongoDB
-- Mongoose
+- MongoDB and Mongoose
 - bcryptjs
 - jsonwebtoken
 - dotenv
 - cors
-- nodemon
 
----
+## Project Structure
+
+```text
+backend-basic-jwt-auth-api/
+├── src/
+│   ├── config/db.js                 # MongoDB connection
+│   ├── controllers/auth.controller.js
+│   ├── middlewares/auth.middleware.js
+│   ├── models/User.js
+│   ├── routes/auth.routes.js
+│   └── app.js
+├── index.js                         # Application entry point
+├── requests.rest                    # REST Client examples
+└── package.json
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18 or newer
+- A running MongoDB instance or MongoDB Atlas database
+
+### Installation
+
+```bash
+git clone https://github.com/a2rp/backend-basic-jwt-auth-api.git
+cd backend-basic-jwt-auth-api
+npm install
+```
+
+Create a `.env` file in the project root:
+
+```env
+PORT=1198
+MONGO_URI=mongodb://127.0.0.1:27017/basic-jwt-auth
+JWT_SECRET=replace_this_with_a_long_random_secret
+```
+
+Start the API:
+
+```bash
+# Development
+npm run dev
+
+# Production-style start
+npm start
+```
+
+The server runs at `http://localhost:1198` by default.
 
 ## API Endpoints
 
-### Home Route
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/` | No | Health/status response |
+| `POST` | `/api/auth/register` | No | Create a new user |
+| `POST` | `/api/auth/login` | No | Validate credentials and return a JWT |
+| `GET` | `/api/auth/me` | Bearer token | Return the logged-in user's profile |
+| `POST` | `/api/auth/logout` | No | Return a logout confirmation |
 
-- GET /
+### Register
 
-Response:
+```http
+POST /api/auth/register
+Content-Type: application/json
 
-```json
 {
-    "success": true,
-    "message": "Backend Basic JWT Auth API is running"
+  "name": "Ashish",
+  "email": "ashish@example.com",
+  "password": "123456"
 }
 ```
 
-### Register User
+### Login
 
-- POST /api/auth/register
+```http
+POST /api/auth/login
+Content-Type: application/json
 
-Request body:
-
-```json
 {
-    "name": "Ashish",
-    "email": "ashish@example.com",
-    "password": "123456"
+  "email": "ashish@example.com",
+  "password": "123456"
 }
 ```
 
-### Login User
+The login response includes a JWT token. Send it with protected requests:
 
-- POST /api/auth/login
-
-Request body:
-
-```json
-{
-    "email": "ashish@example.com",
-    "password": "123456"
-}
-```
-
-### Get Logged In User
-
-- GET /api/auth/me
-
-Headers:
-
-```bash
+```http
+GET /api/auth/me
 Authorization: Bearer YOUR_TOKEN_HERE
 ```
 
-### Logout User
+## Testing the API
 
-- POST /api/auth/logout
+You can use the included [requests.rest](requests.rest) file with the VS Code REST Client extension, or use Postman or Thunder Client.
 
----
+Recommended flow:
 
-## Testing
+1. Register a user.
+2. Log in with the same credentials.
+3. Copy the returned token.
+4. Call `/api/auth/me` with the Bearer token.
+5. Call `/api/auth/logout` when finished.
 
-You can test the API using:
+## Important Notes
 
-- VS Code REST Client with requests.rest
-- Postman
-- Thunder Client
+- Passwords are stored as bcrypt hashes and are never returned in API responses.
+- JWTs are signed using `JWT_SECRET` and expire after seven days.
+- This basic logout endpoint does not revoke or blacklist an already-issued token. A production application should use short-lived access tokens with refresh-token rotation, or HttpOnly cookie-based authentication with server-side revocation.
+- Keep `.env` out of version control and use a strong, unique JWT secret in deployed environments.
 
----
+## Author
 
-## Suggested test flow:
+**Ashish Ranjan**
+Full-Stack Web Developer
 
-- Register user
-- Login user
-- Copy token from login response
-- Access protected route with Bearer token
-- Call logout route
+## Links
 
----
+- Portfolio: [ashishranjan.net](https://www.ashishranjan.net)
+- GitHub: [github.com/a2rp](https://github.com/a2rp)
+- CodePen: [codepen.io/ash1198](https://codepen.io/ash1198)
+- LinkedIn: [linkedin.com/in/aashishranjan](https://www.linkedin.com/in/aashishranjan)
+- Facebook: [facebook.com/theash.ashish](https://www.facebook.com/theash.ashish/)
+- YouTube: [Ashish Ranjan](https://www.youtube.com/@ashishranjan-ashz?sub_confirmation=1)
+- Email: [ash.ranjan09@gmail.com](mailto:ash.ranjan09@gmail.com)
 
-## Important Note
+## Support
 
-This is a basic JWT authentication project.
+If this project helps you, you can support the work here:
 
-- JWT token is returned in the login response
-- Protected route checks token from Authorization header
-- Logout is only a success response in this basic version
-- Token is not blacklisted or invalidated on the server
+- [Support page](https://a2rp-donation-page.netlify.app/)
+- [Buy Me a Coffee](https://buymeacoffee.com/a2rp)
+- [Patreon](https://www.patreon.com/a2rp)
 
-For real production-style logout, refresh token flow or HttpOnly cookie auth is better.
+## License
 
----
-
-## Follow Me
-
-- GitHub: https://github.com/a2rp
-- Portfolio: https://www.ashishranjan.net
-- LinkedIn: https://www.linkedin.com/in/aashishranjan
-- Facebook: https://www.facebook.com/theash.ashish/
-- YouTube: https://www.youtube.com/@ashishranjan-ashz
+This project is distributed under the [MIT License](LICENSE).

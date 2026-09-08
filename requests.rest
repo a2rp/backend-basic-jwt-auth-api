@@ -22,7 +22,7 @@ Content-Type: application/json
 
 ### Get Logged In User
 GET http://localhost:1198/api/auth/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWMyNjhiZDU0NDdhMzAzOTA2OTE0NjIiLCJpYXQiOjE3NzQzNDg0OTUsImV4cCI6MTc3NDk1MzI5NX0.4QUjTz5StMSyzM_8N-ZAVMvjB4sAnuu-EYTkjdV2wFM
+Authorization: Bearer YOUR_TOKEN_HERE
 
 ### Logout User
 POST http://localhost:1198/api/auth/logout
