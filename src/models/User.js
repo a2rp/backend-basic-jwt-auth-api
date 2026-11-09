@@ -13,11 +13,13 @@ const userSchema = new mongoose.Schema(
             unique: true,
             trim: true,
             lowercase: true,
+            maxlength: 254,
+            match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
         },
         password: {
             type: String,
             required: true,
-            minlength: 6,
+            select: false,
         },
     },
     {

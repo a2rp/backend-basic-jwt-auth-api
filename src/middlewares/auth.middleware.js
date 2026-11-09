@@ -18,7 +18,21 @@ const protect = async (req, res, next) => {
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+            algorithms: ["HS256"],
+        });
+
+        if (
+            !decoded ||
+            typeof decoded !== "object" ||
+            typeof decoded.userId !== "string" ||
+            !/^[a-f\d]{24}$/i.test(decoded.userId)
+        ) {
+            return res.status(401).json({
+                success: false,
+                message: "Not authorized, token invalid",
+            });
+        }
 
         req.user = {
             userId: decoded.userId,

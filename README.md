@@ -7,10 +7,13 @@ A lightweight REST API for user registration, login, and protected profile acces
 - User registration with password hashing
 - User login with JWT access-token generation
 - Protected `GET /api/auth/me` profile endpoint
+- Request validation, generic API errors, and hidden password hashes
+- Rate limits for registration and login
+- Helmet security headers and configurable browser-origin access
 - Email normalization and duplicate-user checks
 - MongoDB persistence through Mongoose
-- CORS and JSON request-body support
-- Simple logout response for this basic JWT implementation
+- Size-limited JSON request-body support
+- Client-side logout response; issued tokens are not revoked
 
 ## Tech Stack
 
@@ -21,28 +24,30 @@ A lightweight REST API for user registration, login, and protected profile acces
 - jsonwebtoken
 - dotenv
 - cors
+- helmet
+- express-rate-limit
 
 ## Project Structure
 
 ```text
 backend-basic-jwt-auth-api/
-├── src/
-│   ├── config/db.js                 # MongoDB connection
-│   ├── controllers/auth.controller.js
-│   ├── middlewares/auth.middleware.js
-│   ├── models/User.js
-│   ├── routes/auth.routes.js
-│   └── app.js
-├── index.js                         # Application entry point
-├── requests.rest                    # REST Client examples
-└── package.json
+|-- src/
+|   |-- config/db.js
+|   |-- controllers/auth.controller.js
+|   |-- middlewares/auth.middleware.js
+|   |-- models/User.js
+|   |-- routes/auth.routes.js
+|   `-- app.js
+|-- index.js
+|-- requests.rest
+`-- package.json
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18 or newer
+- A currently supported Node.js LTS release (Mongoose 9 requires Node.js 20.19 or newer)
 - A running MongoDB instance or MongoDB Atlas database
 
 ### Installation
@@ -58,8 +63,12 @@ Create a `.env` file in the project root:
 ```env
 PORT=1198
 MONGO_URI=mongodb://127.0.0.1:27017/basic-jwt-auth
-JWT_SECRET=replace_this_with_a_long_random_secret
+JWT_SECRET=
+JWT_EXPIRES_IN=1h
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
+
+Generate a secret with `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64'))"` and paste the output into `JWT_SECRET`. The server refuses to start if the secret is missing or shorter than 32 bytes. Set `CORS_ORIGINS` to a comma-separated list of exact browser origins; non-browser clients do not use CORS. The server allows `localhost:3000` and `localhost:5173` by default.
 
 Start the API:
 
@@ -92,9 +101,11 @@ Content-Type: application/json
 {
   "name": "Ashish",
   "email": "ashish@example.com",
-  "password": "123456"
+  "password": "replace-with-a-strong-example-password"
 }
 ```
+
+Registration requires a password with at least 8 characters and no more than 72 UTF-8 bytes.
 
 ### Login
 
@@ -104,7 +115,7 @@ Content-Type: application/json
 
 {
   "email": "ashish@example.com",
-  "password": "123456"
+  "password": "replace-with-a-strong-example-password"
 }
 ```
 
@@ -129,10 +140,12 @@ Recommended flow:
 
 ## Important Notes
 
-- Passwords are stored as bcrypt hashes and are never returned in API responses.
-- JWTs are signed using `JWT_SECRET` and expire after seven days.
-- This basic logout endpoint does not revoke or blacklist an already-issued token. A production application should use short-lived access tokens with refresh-token rotation, or HttpOnly cookie-based authentication with server-side revocation.
-- Keep `.env` out of version control and use a strong, unique JWT secret in deployed environments.
+- Passwords are stored as bcrypt hashes and are never returned in API responses. Hashes are excluded from normal Mongoose queries.
+- Registration is limited to 10 requests per IP every 15 minutes. Failed login attempts are limited to 10 per IP in the same window; successful logins do not count.
+- JWTs use HS256 and expire after one hour by default. Set `JWT_EXPIRES_IN` to another `jsonwebtoken` duration when needed.
+- Logout only tells the client to discard its token; this stateless demo cannot revoke an issued token before expiry. Use server-side sessions or refresh-token rotation when revocation is required.
+- The in-memory rate limiter is intended for a single API process. Use a shared store and configure trusted proxy hops deliberately when deploying multiple instances behind a proxy.
+- Keep `.env` out of version control, use HTTPS in deployment, and use a unique randomly generated JWT secret.
 
 ## Author
 

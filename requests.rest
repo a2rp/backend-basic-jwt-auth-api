@@ -8,7 +8,7 @@ Content-Type: application/json
 {
   "name": "Ashish",
   "email": "ashish@example.com",
-  "password": "123456"
+  "password": "replace-with-a-strong-example-password"
 }
 
 ### Login User
@@ -17,7 +17,7 @@ Content-Type: application/json
 
 {
   "email": "ashish@example.com",
-  "password": "123456"
+  "password": "replace-with-a-strong-example-password"
 }
 
 ### Get Logged In User
